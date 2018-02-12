@@ -26,9 +26,9 @@ def ipy_navigation_sliders(obj, **kwargs):
              (iwidget, "continuous_update"))
         link((axis, "index"), (iwidget, "value"))
         vwidget = ipywidgets.BoundedFloatText(
+            value=axis.value,
             min=axis.low_value,
             max=axis.high_value,
-            step=axis.scale,
             description="value"
             # readout_format=".lf"
         )
@@ -37,11 +37,9 @@ def ipy_navigation_sliders(obj, **kwargs):
         link((axis, "value"), (vwidget, "value"))
         link((axis, "high_value"), (vwidget, "max"))
         link((axis, "low_value"), (vwidget, "min"))
-        link((axis, "scale"), (vwidget, "step"))
         name = ipywidgets.Label(str(axis),
                                 layout=ipywidgets.Layout(width="15%"))
-        units = ipywidgets.Label(layout=ipywidgets.Layout(width="5%"),
-                                 disabled=True)
+        units = ipywidgets.Label(layout=ipywidgets.Layout(width="5%"))
         link((axis, "name"), (name, "value"))
         link((axis, "units"), (units, "value"))
         bothw = ipywidgets.HBox([name, iwidget, vwidget, units])
@@ -89,22 +87,24 @@ def _get_axis_widgets(obj):
         link((obj, "value"), (value, "value"))
         link((obj, "high_value"), (value, "max"))
         link((obj, "low_value"), (value, "min"))
-        link((obj, "scale"), (value, "step"))
+        if hasattr(obj, "scale"):
+            link((obj, "scale"), (value, "step"))
 
     units = ipywidgets.Text()
     widgets.append(labelme("Units", units))
     link((obj, "units"), (units, "value"))
     wd["units"] = units
 
-    scale = ipywidgets.FloatText()
-    widgets.append(labelme("Scale", scale))
-    link((obj, "scale"), (scale, "value"))
-    wd["scale"] = scale
-
-    offset = ipywidgets.FloatText()
-    widgets.append(labelme("Offset", offset))
-    link((obj, "offset"), (offset, "value"))
-    wd["offset"] = offset
+    if obj.is_linear:
+        scale = ipywidgets.FloatText()
+        widgets.append(labelme("Scale", scale))
+        link((obj, "scale"), (scale, "value"))
+        wd["scale"] = scale
+    
+        offset = ipywidgets.FloatText()
+        widgets.append(labelme("Offset", offset))
+        link((obj, "offset"), (offset, "value"))
+        wd["offset"] = offset
 
     return {
         "widget": ipywidgets.VBox(widgets),
