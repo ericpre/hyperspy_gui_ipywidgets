@@ -7,7 +7,7 @@ from link_traits import link
 
 @register_ipy_widget(toolkey="navigation_sliders")
 @add_display_arg
-def ipy_navigation_sliders(obj, **kwargs):
+def ipy_navigation_sliders(obj, use_width=False, use_range=False, **kwargs):
     continuous_update = ipywidgets.Checkbox(True,
                                             description="Continous update")
     wdict = {}
@@ -16,39 +16,79 @@ def ipy_navigation_sliders(obj, **kwargs):
     for i, axis in enumerate(obj):
         axis_dict = {}
         wdict["axis{}".format(i)] = axis_dict
-        iwidget = ipywidgets.IntSlider(
-            min=0,
-            max=axis.size - 1,
-            readout=True,
-            description="index"
-        )
-        link((continuous_update, "value"),
-             (iwidget, "continuous_update"))
-        link((axis, "index"), (iwidget, "value"))
-        vwidget = ipywidgets.BoundedFloatText(
+        if use_range:
+            range_widget = ipywidgets.IntRangeSlider(
+                min=0,
+                max=axis.size - 1,
+                readout=True,
+                description="range"
+            )
+            link((axis, "range"), (range_widget, "value"))
+            link((continuous_update, "value"),
+                 (range_widget, "continuous_update"))
+        else:
+            index_widget = ipywidgets.IntSlider(
+                min=0,
+                max=axis.size - 1,
+                readout=True,
+                description="index"
+            )
+            link((axis, "index"), (index_widget, "value"))
+            link((continuous_update, "value"),
+                 (index_widget, "continuous_update"))
+
+        if use_width:
+            width_widget = ipywidgets.IntSlider(
+                min=0,
+                max=axis.size - 1,
+                readout=True,
+                description="width"
+            )
+
+            def update_bound(change):
+                width_widget.max = axis.size - change.new - 1
+            index_widget.observe(update_bound, "value")
+            link((axis, "width"), (width_widget, "value"))
+
+        index_value_widget = ipywidgets.BoundedFloatText(
             min=axis.low_value,
             max=axis.high_value,
             step=axis.scale,
             description="value"
             # readout_format=".lf"
         )
+        link((axis, "value"), (index_value_widget, "value"))
+        link((axis, "high_value"), (index_value_widget, "max"))
+        link((axis, "low_value"), (index_value_widget, "min"))
+        link((axis, "scale"), (index_value_widget, "step"))
         link((continuous_update, "value"),
-             (vwidget, "continuous_update"))
-        link((axis, "value"), (vwidget, "value"))
-        link((axis, "high_value"), (vwidget, "max"))
-        link((axis, "low_value"), (vwidget, "min"))
-        link((axis, "scale"), (vwidget, "step"))
+             (index_value_widget, "continuous_update"))
+
         name = ipywidgets.Label(str(axis),
                                 layout=ipywidgets.Layout(width="15%"))
         units = ipywidgets.Label(layout=ipywidgets.Layout(width="5%"),
                                  disabled=True)
         link((axis, "name"), (name, "value"))
         link((axis, "units"), (units, "value"))
-        bothw = ipywidgets.HBox([name, iwidget, vwidget, units])
+
+        w_list = [name, index_value_widget, units]
+        if use_range:
+            w_list.insert(0, range_widget)
+        else:
+            w_list.insert(0, index_widget)
+        if use_width:
+            w_list.insert(-1, width_widget)
+        bothw = ipywidgets.HBox(w_list)
         # labeled_widget = labelme(str(axis), bothw)
         widgets.append(bothw)
-        axis_dict["value"] = vwidget
-        axis_dict["index"] = iwidget
+
+        axis_dict["value"] = index_value_widget
+        if use_range:
+            axis_dict["range"] = range_widget
+        else:
+            axis_dict["index"] = index_widget
+        if use_width:
+            axis_dict["width"] = width_widget
         axis_dict["units"] = units
     widgets.append(continuous_update)
     box = ipywidgets.VBox(widgets)
