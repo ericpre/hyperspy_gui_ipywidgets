@@ -1,17 +1,15 @@
 import numpy as np
-import numpy.testing
-import numpy.random
 
 import hyperspy.api as hs
 from hyperspy_gui_ipywidgets.tests.utils import KWARGS
 from hyperspy.signal_tools import Signal1DCalibration
-from hyperspy.signal_tools import ImageContrastEditor
 
 
 class TestTools:
 
     def setup_method(self, method):
         self.s = hs.signals.Signal1D(1 + np.arange(100)**2)
+        self.s.change_dtype('float')
         self.s.axes_manager[0].offset = 10
         self.s.axes_manager[0].scale = 2
         self.s.axes_manager[0].units = "m"
@@ -105,17 +103,20 @@ class TestTools:
             signal_range=(15., 50.),
             background_type='Polynomial',
             polynomial_order=2,
-            fast=False,)
+            fast=False,
+            zero_fill=True)
         wd = s.remove_background(**KWARGS)["ipywidgets"]["wdict"]
         assert wd["polynomial_order"].layout.display == "none"  # not visible
         wd["background_type"].value = "Polynomial"
         assert wd["polynomial_order"].layout.display == ""  # visible
         wd["polynomial_order"].value = 2
         wd["fast"].value = False
+        wd["zero_fill"] = True
         wd["left"].value = 15.
         wd["right"].value = 50.
         wd["apply_button"]._click_handlers(wd["apply_button"])    # Trigger it
-        np.testing.assert_allclose(s.data, s2.data)
+        np.testing.assert_allclose(s.data[2:], s2.data[2:])
+        np.testing.assert_allclose(np.zeros(2), s2.data[:2])
 
     def test_spikes_removal_tool(self):
         s = hs.signals.Signal1D(np.ones((2, 3, 30)))

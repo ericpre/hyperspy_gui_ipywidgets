@@ -14,7 +14,8 @@ here = path.abspath(path.dirname(__file__))
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
-except ImportError:
+    # if pandoc is not installed: raise an OSError
+except (ImportError, OSError):
     with open(path.join(here, 'README.md'), encoding='utf-8') as f:
         long_description = f.read()
 
@@ -24,7 +25,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='1.0.0',
+    version='1.1.1',
 
     description=('ipywidgets GUI elements for HyperSpy.'),
     long_description=long_description,
@@ -67,7 +68,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['hyperspy>=1.3', 'ipywidgets>=6.0', 'link_traits'],
+    install_requires=['hyperspy>=1.4.dev', 'ipywidgets>=6.0', 'link_traits'],
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
