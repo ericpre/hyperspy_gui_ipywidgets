@@ -344,10 +344,8 @@ def image_constast_editor_ipy(obj, **kwargs):
     norm = ipywidgets.Dropdown(options=("Linear", "Power", "Log", "Symlog"),
                                description="Norm",
                                value=obj.norm)
-    vmin_percentile = ipywidgets.FloatSlider(0.5, min=0.0, max=100.0,
-                                              description="Vmin percentile")
-    vmax_percentile = ipywidgets.FloatSlider(0.5, min=0.0, max=100.0,
-                                              description="Vmax percentile")
+    contrast_percentile = ipywidgets.FloatRangeSlider(value=(0, 100), min=0.0, max=100.0, description="Vperc", )
+    contrast_percentile.description_tooltip = "Vmin, vmax percentiles"
     gamma = ipywidgets.FloatSlider(1.0, min=0.1, max=3.0, description="Gamma")
     linthresh = ipywidgets.FloatSlider(0.01, min=0.001, max=1.0, step=0.001,
                                        description="Linear threshold")
@@ -371,8 +369,7 @@ def image_constast_editor_ipy(obj, **kwargs):
     wdict["right"] = right
     wdict["bins"] = bins
     wdict["norm"] = norm
-    wdict["vmin_percentile"] = vmin_percentile
-    wdict["vmax_percentile"] = vmax_percentile
+    wdict["contrast_percentile"] = contrast_percentile
     wdict["gamma"] = gamma
     wdict["linthresh"] = linthresh
     wdict["linscale"] = linscale
@@ -381,17 +378,22 @@ def image_constast_editor_ipy(obj, **kwargs):
     wdict["apply_button"] = apply
     wdict["reset_button"] = reset
 
+    def _update_contrast_perc(*args):
+        obj.vmin_percentile, obj.vmax_percentile = contrast_percentile.value
+
     # Connect
     link((obj, "ss_left_value"), (left, "value"))
     link((obj, "ss_right_value"), (right, "value"))
     link((obj, "bins"), (bins, "value"))
     link((obj, "norm"), (norm, "value"))
-    link((obj, "vmin_percentile"), (vmin_percentile, "value"))
-    link((obj, "vmax_percentile"), (vmax_percentile, "value"))
+    link((obj, "vmin_percentile"), (contrast_percentile, "lower"))
+    link((obj, "vmax_percentile"), (contrast_percentile, "upper"))
+    contrast_percentile.observe(_update_contrast_perc, names="value")
     link((obj, "gamma"), (gamma, "value"))
     link((obj, "linthresh"), (linthresh, "value"))
     link((obj, "linscale"), (linscale, "value"))
     link((obj, "auto"), (auto, "value"))
+
 
     def display_parameters(change):
         # Necessary for the initialisation
@@ -412,8 +414,7 @@ def image_constast_editor_ipy(obj, **kwargs):
     def disable_parameters(change):
         # Necessary for the initialisation
         v = change if isinstance(change, bool) else change.new
-        vmin_percentile.disabled = not v
-        vmax_percentile.disabled = not v
+        contrast_percentile.disabled = not v
 
     disable_parameters(obj.auto)
     auto.observe(disable_parameters, "value")
@@ -429,8 +430,7 @@ def image_constast_editor_ipy(obj, **kwargs):
     box = ipywidgets.VBox([left,
                            right,
                            auto,
-                           vmin_percentile,
-                           vmax_percentile,
+                           contrast_percentile,
                            bins,
                            norm,
                            gamma,
