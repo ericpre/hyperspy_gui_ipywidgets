@@ -121,12 +121,12 @@ def _get_axis_widgets(obj):
     link((obj, "units"), (units, "value"))
     wd["units"] = units
 
-    if obj.is_linear:
+    if obj.is_uniform:
         scale = ipywidgets.FloatText()
         widgets.append(labelme("Scale", scale))
         link((obj, "scale"), (scale, "value"))
         wd["scale"] = scale
-    
+
         offset = ipywidgets.FloatText()
         widgets.append(labelme("Offset", offset))
         link((obj, "offset"), (offset, "value"))
