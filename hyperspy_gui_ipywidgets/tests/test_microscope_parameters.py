@@ -38,11 +38,29 @@ class TestSetMicroscopeParameters:
         md = s.metadata
         wd = s.set_microscope_parameters(**KWARGS)["ipywidgets"]["wdict"]
         if signal_type == "EELS":
-            mapping = exspy.signals.eels.EELSTEMParametersUI.mapping
+            try:
+                # privatised in https://github.com/hyperspy/exspy/pull/160
+                from exspy.signals._eels import EELSTEMParametersUI
+            except ImportError:
+                from exspy.signals.eels import EELSTEMParametersUI
+
+            mapping = EELSTEMParametersUI.mapping
         elif signal_type == "EDS_SEM":
-            mapping = exspy.signals.eds_sem.EDSSEMParametersUI.mapping
+            try:
+                # privatised in https://github.com/hyperspy/exspy/pull/160
+                from exspy.signals._eds_sem import EDSSEMParametersUI
+            except ImportError:
+                from exspy.signals.eds_sem import EDSSEMParametersUI
+
+            mapping = EDSSEMParametersUI.mapping
         elif signal_type == "EDS_TEM":
-            mapping = exspy.signals.eds_tem.EDSTEMParametersUI.mapping
+            try:
+                # privatised in https://github.com/hyperspy/exspy/pull/160
+                from exspy.signals._eds_tem import EDSTEMParametersUI
+            except ImportError:
+                from exspy.signals.eds_tem import EDSTEMParametersUI
+
+            mapping = EDSTEMParametersUI.mapping
         for key, widget in wd.items():
             if "button" not in key:
                 widget.value = random()
