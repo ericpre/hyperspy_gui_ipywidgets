@@ -2,7 +2,8 @@
   Add a single entry in the corresponding section below.
   See https://keepachangelog.com for details
 
-## v2.2.0 (UNRELEASED)
+## v2.1.1 (2026-04-09)
+* Fix privatized eXSpy import. ([#96](https://github.com/hyperspy/hyperspy_gui_ipywidgets/pull/96)).
 
 ## v2.1.0 (2025-03-02)
 
